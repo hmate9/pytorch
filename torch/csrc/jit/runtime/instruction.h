@@ -52,6 +52,23 @@ namespace jit {
   _(CREATE_OBJECT, "T") /* create an object of type X */                       \
   _(ISINSTANCE, "TI") /* check object is one of  types[X:X+N]  */              \
   _(TUPLE_SLICE, "II") /* slice tup[X:(X+N)] */                                \
+  _(TUPLE_INDEX, "") /**/                                                      \
+  _(RAISE_EXCEPTION, "") /**/                                                  \
+  _(DICT_INDEX, "") /**/                                                       \
+  _(UNCHECKED_CAST, "") /**/                                                   \
+  _(__IS__, "") /**/                                                           \
+  _(UN_INITIALIZED, "") /**/                                                   \
+  _(__ISNOT__, "") /**/                                                        \
+  _(FORMAT, "") /**/                                                           \
+  _(SIZE, "") /**/                                                             \
+  _(DEVICE, "") /**/                                                           \
+  _(DTYPE, "") /**/                                                            \
+  _(DIM, "") /**/                                                              \
+  _(__NOT__, "") /**/                                                          \
+  _(BOOL_TENSOR, "") /**/                                                      \
+  _(TO_LIST, "") /* convert the input to a list */                             \
+  _(NUM_TO_TENSOR, "") /**/                                                    \
+  _(IS_CUDA, "") /**/                                                          \
   _(FORK, "CN") /* launch a thread to run code entry x with N inputs  */       \
   _(WARN, "I") /* emit a warning with line information */                      \
   _(ENTER, "EN") /* enter scope of a contextmanager */                         \

@@ -186,6 +186,115 @@ TEST(LiteInterpreterTest, Tuple) {
   AT_ASSERT(output.toTupleRef().elements()[1].toInt() == 2);
 }
 
+TEST(LiteInterpreterTest, AtenDim) {
+  Module m("m");
+  m.define(R"JIT(
+  def forward(self, x: torch.Tensor):
+      return x.dim()
+  )JIT");
+  std::stringstream ss;
+  m._save_for_mobile(ss);
+  mobile::Module bc = _load_for_mobile(ss);
+  std::vector<torch::jit::IValue> inputs({torch::ones({})});
+  auto output = bc.get_method("forward")(inputs);
+  // AT_ASSERT(output.toTupleRef().elements()[1].toInt() == 2);
+}
+
+TEST(LiteInterpreterTest, PrimIsCuda) {
+  Module m("m");
+  m.define(R"JIT(
+  def forward(self, x: torch.Tensor):
+      return x.is_cuda
+  )JIT");
+  std::stringstream ss;
+  m._save_for_mobile(ss);
+  mobile::Module bc = _load_for_mobile(ss);
+  std::vector<torch::jit::IValue> inputs({torch::ones({})});
+  auto output = bc.get_method("forward")(inputs);
+  // AT_ASSERT(output.toTupleRef().elements()[1].toInt() == 2);
+}
+
+TEST(LiteInterpreterTest, AtenBoolNot) {
+  Module m("m");
+  m.define(R"JIT(
+  def forward(self, x:bool=True):
+      return not x
+  )JIT");
+  std::stringstream ss;
+  m._save_for_mobile(ss);
+  mobile::Module bc = _load_for_mobile(ss);
+  std::vector<torch::jit::IValue> inputs;
+  auto output = bc.get_method("forward")(inputs);
+  // AT_ASSERT(output.toTupleRef().elements()[1].toInt() == 2);
+}
+
+TEST(LiteInterpreterTest, AtenFormat) {
+  Module m("m");
+  m.define(R"""(
+  def forward(self):
+      a = "message"
+      b = "a string{}".format(a)
+      return 1
+  )""");
+  std::stringstream ss;
+  m._save_for_mobile(ss);
+  mobile::Module bc = _load_for_mobile(ss);
+  std::vector<torch::jit::IValue> inputs;
+  auto output = bc.get_method("forward")(inputs);
+  // AT_ASSERT(output.toTupleRef().elements()[1].toInt() == 2);
+}
+
+TEST(LiteInterpreterTest, AtenIs_IsNot) {
+  Module m("m");
+  m.define(R"""(
+  def forward(self):
+      c = {1: 3}
+      d = {2: 4}
+      e = {5: 6}
+      f = {7: 8}
+      a = c is d
+      b = f is not e
+      return int(a == b)
+  )""");
+  std::stringstream ss;
+  m._save_for_mobile(ss);
+  mobile::Module bc = _load_for_mobile(ss);
+  std::vector<torch::jit::IValue> inputs;
+  auto output = bc.get_method("forward")(inputs);
+  // AT_ASSERT(output.toTupleRef().elements()[1].toInt() == 2);
+}
+
+TEST(LiteInterpreterTest, PrimNumToTensor) {
+  Module m("m");
+  m.define(R"""(
+  def forward(self, x:int=1):
+    y = torch.tensor(x)
+    return y
+  )""");
+  std::stringstream ss;
+  m._save_for_mobile(ss);
+  mobile::Module bc = _load_for_mobile(ss);
+  std::vector<torch::jit::IValue> inputs;
+  auto output = bc.get_method("forward")(inputs);
+  // AT_ASSERT(output.toTupleRef().elements()[1].toInt() == 2);
+}
+
+TEST(LiteInterpreterTest, DictIndex) {
+  Module m("m");
+  m.define(R"""(
+  def forward(self):
+      d = {"a": "b"}
+      l = [1, 3, 5]
+      return d["a"], l[0]
+  )""");
+  std::stringstream ss;
+  m._save_for_mobile(ss);
+  mobile::Module bc = _load_for_mobile(ss);
+  std::vector<torch::jit::IValue> inputs;
+  auto output = bc.get_method("forward")(inputs);
+  // AT_ASSERT(output.toTupleRef().elements()[1].toInt() == 2);
+}
+
 TEST(LiteInterpreterTest, Dict) {
   Module m("m");
   m.define(R"JIT(
