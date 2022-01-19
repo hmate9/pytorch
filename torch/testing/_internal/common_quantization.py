@@ -402,6 +402,8 @@ class QuantizationTestCase(TestCase):
            type(module) not in float_to_observed_module_class_mapping.values() and \
            not isinstance(module, _FusedModule):
             for child in module.children():
+                if type(child) in [nn.Dropout]:
+                    continue
                 self.checkObservers(child, propagate_qconfig_list, prepare_custom_config_dict)
 
     def checkQuantDequant(self, mod):
@@ -1633,6 +1635,23 @@ class QuantStubModel(torch.nn.Module):
         return self.dequant(x)
 
 class ManualLinearQATModel(torch.nn.Module):
+    r"""A Module with manually inserted `QuantStub` and `DeQuantStub`
+    """
+    def __init__(self, qengine):
+        super().__init__()
+        self.qconfig = torch.quantization.get_default_qat_qconfig(qengine)
+        self.quant = QuantStub()
+        self.dequant = DeQuantStub()
+        self.fc1 = torch.nn.Linear(5, 1).to(dtype=torch.float)
+        self.fc2 = torch.nn.Linear(1, 10).to(dtype=torch.float)
+
+    def forward(self, x):
+        x = self.quant(x)
+        x = self.fc1(x)
+        x = self.fc2(x)
+        return self.dequant(x)
+
+class ManualDropoutQATModel(torch.nn.Module):
     r"""A Module with manually inserted `QuantStub` and `DeQuantStub`
     """
     def __init__(self, qengine):
